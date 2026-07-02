@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Claude Code",
+    "checkCommand": "claude",
+    "runCommand": "claude"
+  },
+  {
+    "name": "OpenAI Codex CLI",
+    "checkCommand": "codex",
+    "runCommand": "codex"
+  },
+  {
+    "name": "GitHub Copilot CLI",
+    "checkCommand": "copilot",
+    "runCommand": "copilot"
+  },
+  {
+    "name": "Gemini CLI",
+    "checkCommand": "gemini",
+    "runCommand": "gemini"
+  },
+  {
+    "name": "Aider",
+    "checkCommand": "aider",
+    "runCommand": "aider"
+  },
+  {
+    "name": "Cursor Agent CLI",
+    "checkCommand": "cursor-agent",
+    "runCommand": "cursor-agent"
+  }
+]
