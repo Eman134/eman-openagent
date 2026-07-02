@@ -27,6 +27,19 @@ No admin rights needed — the installer only touches
 
 ## Installation
 
+### Quick install (no git required)
+
+```powershell
+irm https://raw.githubusercontent.com/Eman134/eman-openagent/main/install-remote.ps1 | iex
+```
+
+This downloads the project straight from GitHub as a zip, installs it
+to `%LOCALAPPDATA%\Programs\eman-openagent`, and registers the context
+menu — no git, no manual cloning. As with any `irm | iex` one-liner,
+only run it if you trust the source (it's this public repo).
+
+### From a git clone
+
 ```powershell
 git clone https://github.com/Eman134/eman-openagent.git
 cd eman-openagent
