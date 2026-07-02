@@ -77,25 +77,88 @@ function Get-OrderedDetectedAgents {
     , $result
 }
 
-# Refreshes the quick-launch context menu label to name the current
-# most-used agent, e.g. "Open Claude Code Agent". Registry writes are
-# best-effort: if they fail, the menu just keeps showing a stale label
-# until the next successful run - not worth failing the whole launch over.
-function Update-QuickMenuLabel {
-    $ordered = Get-OrderedDetectedAgents
-    $label = if ($ordered.Count -gt 0) { 'Open {0} Agent' -f $ordered[0].Agent.name } else { 'Open Agent (quick)' }
+# Registers (or refreshes) one Explorer context menu verb. Shared by
+# install.ps1 and Sync-ContextMenu so there's a single source of truth
+# for how these entries are built.
+function Register-ContextMenuItem {
+    param(
+        [string]$KeyPath,
+        [string]$Label,
+        [string]$ScriptPath,
+        [string]$PathToken,
+        [string]$Position
+    )
 
+    $iconPath = Join-Path $PSScriptRoot '..\assets\icon.ico'
+
+    New-Item -Path $KeyPath -Force | Out-Null
+    Set-ItemProperty -Path $KeyPath -Name '(Default)' -Value $Label
+    Set-ItemProperty -Path $KeyPath -Name 'Icon' -Value $iconPath
+    if ($Position) {
+        Set-ItemProperty -Path $KeyPath -Name 'Position' -Value $Position
+    }
+
+    $cmdKey = Join-Path $KeyPath 'command'
+    New-Item -Path $cmdKey -Force | Out-Null
+    $command = 'wt.exe -d "{0}" powershell -NoExit -ExecutionPolicy Bypass -File "{1}" -Path "{0}"' -f $PathToken, $ScriptPath
+    Set-ItemProperty -Path $cmdKey -Name '(Default)' -Value $command
+}
+
+function Remove-ContextMenuItemIfExists {
+    param([string]$KeyPath)
+
+    if (Test-Path -LiteralPath $KeyPath) {
+        Remove-Item -LiteralPath $KeyPath -Recurse -Force
+    }
+}
+
+# Keeps the Explorer context menu in sync with what's actually detected
+# right now: refreshes the "Open Agent" label to name the top pick, and
+# only shows "Choose Agent..." when there's more than one agent to
+# choose from (with just one, the picker would be pointless). Also used
+# right after install, so the menu is correct from the very first run.
+# Registry writes are best-effort: if one fails, the menu just keeps
+# showing stale state until the next successful run - not worth failing
+# the whole launch over.
+function Sync-ContextMenu {
+    $ordered = Get-OrderedDetectedAgents
+
+    $quickLabel = if ($ordered.Count -gt 0) { 'Open {0} Agent' -f $ordered[0].Agent.name } else { 'Open Agent (quick)' }
     foreach ($keyPath in @(
         'HKCU:\Software\Classes\Directory\shell\OpenAgentQuick',
         'HKCU:\Software\Classes\Directory\Background\shell\OpenAgentQuick'
     )) {
         if (Test-Path -LiteralPath $keyPath) {
             try {
-                Set-ItemProperty -Path $keyPath -Name '(Default)' -Value $label -ErrorAction Stop
+                Set-ItemProperty -Path $keyPath -Name '(Default)' -Value $quickLabel -ErrorAction Stop
             }
             catch {
                 # Best-effort - see comment above.
             }
         }
+    }
+
+    $choosePairs = @(
+        @{ KeyPath = 'HKCU:\Software\Classes\Directory\shell\OpenAgent'; PathToken = '%1' }
+        @{ KeyPath = 'HKCU:\Software\Classes\Directory\Background\shell\OpenAgent'; PathToken = '%V' }
+    )
+
+    try {
+        if ($ordered.Count -le 1) {
+            foreach ($pair in $choosePairs) {
+                Remove-ContextMenuItemIfExists -KeyPath $pair.KeyPath
+            }
+        }
+        else {
+            $selectScriptPath = Join-Path $PSScriptRoot 'Select-Agent.ps1'
+            foreach ($pair in $choosePairs) {
+                # Position=Bottom keeps it grouped near Windows' own
+                # "Open in Terminal" entry, next to our "Open Agent" item.
+                Register-ContextMenuItem -KeyPath $pair.KeyPath -Label 'Choose Agent...' -ScriptPath $selectScriptPath -PathToken $pair.PathToken -Position 'Bottom'
+            }
+        }
+    }
+    catch {
+        # Best-effort - see comment above.
     }
 }

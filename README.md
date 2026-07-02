@@ -4,16 +4,18 @@
 
 # eman-openagent
 
-Adds two items to the Windows Explorer context menu: right-click a
-folder (or empty space inside it) and you get **"Open Agent"**, a
-one-click launch of your most-used command-line AI agent right there,
-and **"Choose Agent..."**, which opens a **Windows Terminal** picker
-listing every agent installed on your machine (Claude Code, Codex,
-Copilot CLI, Gemini CLI, DeepSeek, Aider, etc.) — click one, use arrow
-keys + Enter, or press its number.
+Adds an **"Open Agent"** item to the Windows Explorer context menu: a
+one-click launch of your most-used command-line AI agent, right there
+in the folder you right-clicked. If more than one agent is installed,
+a second item, **"Choose Agent..."**, also shows up — it opens a
+**Windows Terminal** picker listing every agent detected on your
+machine (Claude Code, Codex, Copilot CLI, Gemini CLI, DeepSeek, Aider,
+etc.). Click one, use arrow keys + Enter, or press its number.
 
-Every pick updates the usage count behind "Open Agent", so it always
-points at whichever agent you actually reach for most.
+With only one agent installed, "Choose Agent..." is skipped entirely —
+there'd be nothing to choose from. Every pick updates the usage count
+behind "Open Agent", so it always points at whichever agent you
+actually reach for most.
 
 Detection happens live — it's not a static menu built once. Install a
 new agent tomorrow and it just shows up in the picker, no
@@ -92,6 +94,12 @@ Agent..." items were registered in the Windows Explorer context menu.
    most-used first) — click one, use arrow keys + Enter, or press its
    number.
 4. The chosen agent starts right there, in that folder.
+
+> **Just installed a new agent?** The menu only re-checks what's
+> installed when you actually use it. Click **"Open Agent"** once (even
+> if it launches your usual agent) to refresh things — if you now have
+> 2+ agents detected, "Choose Agent..." will show up from then on. No
+> need to reinstall or restart Explorer for this.
 
 ## Supported agents / adding your own
 
@@ -172,29 +180,39 @@ uninstaller additionally deletes the installed copy at
 
 ## How it works
 
-- `install.ps1` creates, under `HKCU:\Software\Classes`, two menu
-  entries per location (`Directory\shell` for right-clicking a folder,
-  `Directory\Background\shell` for right-clicking empty space inside
-  one):
-  - `OpenAgentQuick` ("Open Agent") — launches `scripts\Run-Agent.ps1`.
-  - `OpenAgent` ("Choose Agent...") — launches `scripts\Select-Agent.ps1`.
-- Both scripts share `scripts\Common.ps1`, which reads `agents.json`,
-  tests which agents are available on PATH via `Get-Command`, and
-  sorts the hits by usage count (tracked in
+- `install.ps1` always registers `OpenAgentQuick` ("Open Agent") under
+  `HKCU:\Software\Classes` at both `Directory\shell` (right-click on a
+  folder) and `Directory\Background\shell` (right-click on empty space
+  inside one). It launches `scripts\Run-Agent.ps1`.
+- `Select-Agent.ps1` and `Run-Agent.ps1` share `scripts\Common.ps1`,
+  which reads `agents.json`, tests which agents are available on PATH
+  via `Get-Command`, and sorts the hits by usage count (tracked in
   `%LOCALAPPDATA%\eman-openagent\usage.json`).
-- `Run-Agent.ps1` runs the top hit directly. `Select-Agent.ps1` opens
-  in Windows Terminal and renders a picker straight in that console —
-  a small P/Invoke layer around the Win32 console API
-  (`ReadConsoleInput`) handles both mouse clicks and keyboard input, so
-  no extra window or GUI toolkit is involved.
-- After any pick, the usage count is bumped and the "Open Agent" menu
-  label is refreshed in the registry to name the new top agent.
+- `Run-Agent.ps1` runs the top hit directly. `Select-Agent.ps1` (used
+  by "Choose Agent...") opens in Windows Terminal and renders a picker
+  straight in that console — a small P/Invoke layer around the Win32
+  console API (`ReadConsoleInput`) handles both mouse clicks and
+  keyboard input, so no extra window or GUI toolkit is involved.
+- After any pick, `Common.ps1`'s `Sync-ContextMenu` runs: it bumps the
+  usage count, refreshes "Open Agent"'s label to name the new top
+  agent, and adds or removes the `OpenAgent` ("Choose Agent...") key
+  depending on whether more than one agent is currently detected. Both
+  items use `Position=Bottom`, which keeps them grouped together near
+  Windows' own "Open in Terminal" entry.
+- Since there's no background watcher, the menu only re-syncs when you
+  actually use "Open Agent" or "Choose Agent...". If you install a
+  second agent while only one was detected, "Choose Agent..." reappears
+  the next time you click "Open Agent" (or immediately if you just
+  re-run `install.ps1` / the remote installer).
 
 ## Troubleshooting
 
 - **The items don't show up in the menu**: restart Explorer or
   log off/on. Windows caches context menu entries and can take a
   moment to refresh.
+- **Installed a new agent, but "Choose Agent..." still isn't there**:
+  click "Open Agent" once to trigger a re-sync (see the note under
+  Usage above), or re-run `install.ps1` / the remote installer.
 - **"No agent found"**: make sure the agent is installed and reachable
   by opening a new terminal window and running `where <command>`.
 - **Execution policy error**: run

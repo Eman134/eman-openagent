@@ -200,7 +200,7 @@ public static class OpenAgentConsole
 $usage = Get-UsageMap
 $usage[$chosen.Agent.name] = $chosen.Count + 1
 Save-UsageMap -Usage $usage
-Update-QuickMenuLabel
+Sync-ContextMenu
 
 Clear-Host
 Write-Host "Open agent in [$Path]" -ForegroundColor Cyan
