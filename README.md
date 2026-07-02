@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon.png" width="96" height="96" alt="eman-openagent icon">
+</p>
+
 # eman-openagent
 
 Adds an **"Open Agent"** item to the Windows Explorer context menu.

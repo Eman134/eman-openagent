@@ -95,3 +95,9 @@ function New-IcoFile {
 $outPath = Join-Path $PSScriptRoot 'icon.ico'
 New-IcoFile -Sizes @(16, 32, 48) -OutPath $outPath
 Write-Host "Icon written to $outPath" -ForegroundColor Green
+
+$pngOutPath = Join-Path $PSScriptRoot 'icon.png'
+$pngBmp = New-AgentIconBitmap -Size 256
+$pngBmp.Save($pngOutPath, [System.Drawing.Imaging.ImageFormat]::Png)
+$pngBmp.Dispose()
+Write-Host "PNG written to $pngOutPath (for README use)" -ForegroundColor Green
