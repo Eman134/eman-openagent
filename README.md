@@ -21,6 +21,10 @@ Detection happens live — it's not a static menu built once. Install a
 new agent tomorrow and it just shows up in the picker, no
 reconfiguration needed.
 
+<p align="center">
+  <img src="assets/example.gif" width="720" alt="Demo: right-clicking a folder and launching an AI agent via Open Agent / Choose Agent...">
+</p>
+
 ## Screenshots
 
 With only one agent detected, the menu stays out of your way — just
