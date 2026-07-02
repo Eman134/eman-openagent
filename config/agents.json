@@ -28,5 +28,30 @@
     "name": "Cursor Agent CLI",
     "checkCommand": "cursor-agent",
     "runCommand": "cursor-agent"
+  },
+  {
+    "name": "DeepSeek CLI",
+    "checkCommand": "deepseek",
+    "runCommand": "deepseek"
+  },
+  {
+    "name": "Amazon Q Developer CLI",
+    "checkCommand": "q",
+    "runCommand": "q chat"
+  },
+  {
+    "name": "Qwen Code CLI",
+    "checkCommand": "qwen",
+    "runCommand": "qwen"
+  },
+  {
+    "name": "Goose",
+    "checkCommand": "goose",
+    "runCommand": "goose session start"
+  },
+  {
+    "name": "OpenCode",
+    "checkCommand": "opencode",
+    "runCommand": "opencode"
   }
 ]

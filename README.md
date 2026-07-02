@@ -80,6 +80,15 @@ Bundled by default:
 | Gemini CLI             | `gemini`          |
 | Aider                  | `aider`           |
 | Cursor Agent CLI       | `cursor-agent`    |
+| DeepSeek CLI           | `deepseek`        |
+| Amazon Q Developer CLI | `q`               |
+| Qwen Code CLI          | `qwen`            |
+| Goose                  | `goose`           |
+| OpenCode               | `opencode`        |
+
+Command names for some of these move fast and vary by install method —
+if detection doesn't pick up an agent you have installed, just fix the
+`checkCommand`/`runCommand` in your local `agents.json`.
 
 To add another agent, just append a new object to the list, e.g.:
 

@@ -32,7 +32,7 @@ if (-not (Test-Path -LiteralPath $userConfigPath)) {
 }
 
 $menuLabel = 'Open Agent'
-$iconPath = 'powershell.exe,0'
+$iconPath = Join-Path $repoRoot 'assets\icon.ico'
 
 function Register-OpenAgentMenu {
     param(
