@@ -49,7 +49,11 @@ function Get-OrderedDetectedAgents {
         throw "Config file not found: $configPath"
     }
 
-    $agents = @(Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json)
+    # Materialize before wrapping in @(): ConvertFrom-Json emits its whole
+    # result as a single non-enumerated pipeline object, so @(... | ConvertFrom-Json)
+    # wraps that entire array as ONE element instead of flattening it.
+    $parsedAgents = Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json
+    $agents = @($parsedAgents)
     $usage = Get-UsageMap
 
     $detected = @()

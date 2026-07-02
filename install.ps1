@@ -56,14 +56,17 @@ function Register-ContextMenuItem {
     Set-ItemProperty -Path $cmdKey -Name '(Default)' -Value $command
 }
 
-# Quick-launch: runs the most-used agent directly, no picker. Shown above
-# the full picker so it's the first thing you see (Position=Top).
+# Both items get Position=Top so they land together at the top of the
+# menu, next to each other, instead of one at the top and the other
+# wherever Explorer's default alphabetical ordering would put it.
+
+# Quick-launch: runs the most-used agent directly, no picker.
 Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\shell\OpenAgentQuick' -Label 'Open Agent' -ScriptPath $quickScriptPath -PathToken '%1' -Position 'Top'
 Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\Background\shell\OpenAgentQuick' -Label 'Open Agent' -ScriptPath $quickScriptPath -PathToken '%V' -Position 'Top'
 
 # Full picker: choose among every detected agent.
-Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\shell\OpenAgent' -Label 'Choose Agent...' -ScriptPath $scriptPath -PathToken '%1'
-Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\Background\shell\OpenAgent' -Label 'Choose Agent...' -ScriptPath $scriptPath -PathToken '%V'
+Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\shell\OpenAgent' -Label 'Choose Agent...' -ScriptPath $scriptPath -PathToken '%1' -Position 'Top'
+Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\Background\shell\OpenAgent' -Label 'Choose Agent...' -ScriptPath $scriptPath -PathToken '%V' -Position 'Top'
 
 # Give the quick-launch item its real label right away, based on current usage.
 . (Join-Path $repoRoot 'scripts\Common.ps1')
