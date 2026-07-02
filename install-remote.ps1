@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    One-line remote installer for eman-openagent — no git required.
+    One-line remote installer for eman-openagent - no git required.
 
 .DESCRIPTION
     Downloads the repository as a zip straight from GitHub, extracts it
@@ -29,7 +29,7 @@ Remove-Item -LiteralPath $tempZip -Force
 
 $extractedRoot = Get-ChildItem -LiteralPath $tempExtract -Directory | Select-Object -First 1
 if (-not $extractedRoot) {
-    throw "Unexpected zip layout — could not find the extracted project folder."
+    throw "Unexpected zip layout - could not find the extracted project folder."
 }
 
 if (Test-Path -LiteralPath $installDir) {

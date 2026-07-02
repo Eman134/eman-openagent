@@ -22,50 +22,16 @@ if (-not (Test-Path -LiteralPath $Path)) {
     exit 1
 }
 
-$appDataDir = Join-Path $env:LOCALAPPDATA 'eman-openagent'
-$userConfigPath = Join-Path $appDataDir 'agents.json'
-$defaultConfigPath = Join-Path $PSScriptRoot '..\config\agents.json'
-$configPath = if (Test-Path -LiteralPath $userConfigPath) { $userConfigPath } else { $defaultConfigPath }
-$usagePath = Join-Path $appDataDir 'usage.json'
+. (Join-Path $PSScriptRoot 'Common.ps1')
 
-if (-not (Test-Path -LiteralPath $configPath)) {
-    throw "Config file not found: $configPath"
-}
+$ordered = Get-OrderedDetectedAgents
 
-$agents = @(Get-Content -LiteralPath $configPath -Raw | ConvertFrom-Json)
-
-$usage = @{}
-if (Test-Path -LiteralPath $usagePath) {
-    $raw = Get-Content -LiteralPath $usagePath -Raw | ConvertFrom-Json
-    foreach ($prop in $raw.PSObject.Properties) {
-        $usage[$prop.Name] = [int]$prop.Value
-    }
-}
-
-$detected = @()
-$originalIndex = 0
-foreach ($agent in $agents) {
-    if (Get-Command $agent.checkCommand -ErrorAction SilentlyContinue) {
-        $count = if ($usage.ContainsKey($agent.name)) { $usage[$agent.name] } else { 0 }
-        $detected += [PSCustomObject]@{
-            Agent         = $agent
-            Count         = $count
-            OriginalIndex = $originalIndex
-        }
-    }
-    $originalIndex++
-}
-
-if ($detected.Count -eq 0) {
+if ($ordered.Count -eq 0) {
     Write-Host "No AI agent was found on PATH (claude, codex, copilot, gemini, deepseek...)." -ForegroundColor Yellow
-    Write-Host "Install one of them, or edit:`n$userConfigPath"
+    Write-Host "Install one of them, or edit:`n$(Join-Path (Get-AgentAppDataDir) 'agents.json')"
     Read-Host 'Press Enter to close'
     exit 0
 }
-
-# Most-used first; ties keep the order from agents.json (no reliance on
-# Sort-Object's stability, which differs between PS 5.1 and 7+).
-$ordered = @($detected | Sort-Object -Property @{Expression = 'Count'; Descending = $true }, OriginalIndex)
 
 if ($ordered.Count -eq 1) {
     $chosen = $ordered[0]
@@ -231,9 +197,10 @@ public static class OpenAgentConsole
     }
 }
 
+$usage = Get-UsageMap
 $usage[$chosen.Agent.name] = $chosen.Count + 1
-New-Item -ItemType Directory -Path $appDataDir -Force | Out-Null
-($usage | ConvertTo-Json) | Set-Content -LiteralPath $usagePath -Encoding UTF8
+Save-UsageMap -Usage $usage
+Update-QuickMenuLabel
 
 Clear-Host
 Write-Host "Open agent in [$Path]" -ForegroundColor Cyan
@@ -241,5 +208,5 @@ Write-Host "Launching $($chosen.Agent.name)..." -ForegroundColor Green
 Write-Host ''
 
 Set-Location -LiteralPath $Path
-# Config-provided command, not external/untrusted input — safe to expand.
+# Config-provided command, not external/untrusted input - safe to expand.
 Invoke-Expression $chosen.Agent.runCommand

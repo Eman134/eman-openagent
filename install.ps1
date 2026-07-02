@@ -31,30 +31,43 @@ if (-not (Test-Path -LiteralPath $userConfigPath)) {
     Write-Host "Copied agents config to $userConfigPath (edit this file to add/remove agents)."
 }
 
-$menuLabel = 'Open Agent'
 $iconPath = Join-Path $repoRoot 'assets\icon.ico'
+$quickScriptPath = Join-Path $repoRoot 'scripts\Run-Agent.ps1'
 
-function Register-OpenAgentMenu {
+function Register-ContextMenuItem {
     param(
         [string]$KeyPath,
-        [string]$PathToken
+        [string]$Label,
+        [string]$ScriptPath,
+        [string]$PathToken,
+        [string]$Position
     )
 
     New-Item -Path $KeyPath -Force | Out-Null
-    Set-ItemProperty -Path $KeyPath -Name '(Default)' -Value $menuLabel
+    Set-ItemProperty -Path $KeyPath -Name '(Default)' -Value $Label
     Set-ItemProperty -Path $KeyPath -Name 'Icon' -Value $iconPath
+    if ($Position) {
+        Set-ItemProperty -Path $KeyPath -Name 'Position' -Value $Position
+    }
 
     $cmdKey = Join-Path $KeyPath 'command'
     New-Item -Path $cmdKey -Force | Out-Null
-    $command = 'wt.exe -d "{0}" powershell -NoExit -ExecutionPolicy Bypass -File "{1}" -Path "{0}"' -f $PathToken, $scriptPath
+    $command = 'wt.exe -d "{0}" powershell -NoExit -ExecutionPolicy Bypass -File "{1}" -Path "{0}"' -f $PathToken, $ScriptPath
     Set-ItemProperty -Path $cmdKey -Name '(Default)' -Value $command
 }
 
-# Right-click on a folder
-Register-OpenAgentMenu -KeyPath 'HKCU:\Software\Classes\Directory\shell\OpenAgent' -PathToken '%1'
+# Quick-launch: runs the most-used agent directly, no picker. Shown above
+# the full picker so it's the first thing you see (Position=Top).
+Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\shell\OpenAgentQuick' -Label 'Open Agent' -ScriptPath $quickScriptPath -PathToken '%1' -Position 'Top'
+Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\Background\shell\OpenAgentQuick' -Label 'Open Agent' -ScriptPath $quickScriptPath -PathToken '%V' -Position 'Top'
 
-# Right-click on empty space inside a folder
-Register-OpenAgentMenu -KeyPath 'HKCU:\Software\Classes\Directory\Background\shell\OpenAgent' -PathToken '%V'
+# Full picker: choose among every detected agent.
+Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\shell\OpenAgent' -Label 'Choose Agent...' -ScriptPath $scriptPath -PathToken '%1'
+Register-ContextMenuItem -KeyPath 'HKCU:\Software\Classes\Directory\Background\shell\OpenAgent' -Label 'Choose Agent...' -ScriptPath $scriptPath -PathToken '%V'
 
-Write-Host "'Open Agent' menu installed successfully." -ForegroundColor Green
-Write-Host "If the item doesn't show up right away, restart Explorer (or log off/on)."
+# Give the quick-launch item its real label right away, based on current usage.
+. (Join-Path $repoRoot 'scripts\Common.ps1')
+Update-QuickMenuLabel
+
+Write-Host "'Open Agent' and 'Choose Agent...' menus installed successfully." -ForegroundColor Green
+Write-Host "If the items don't show up right away, restart Explorer (or log off/on)."
