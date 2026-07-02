@@ -5,21 +5,49 @@
 # eman-openagent
 
 Adds an **"Open Agent"** item to the Windows Explorer context menu: a
-one-click launch of your most-used command-line AI agent, right there
-in the folder you right-clicked. If more than one agent is installed,
-a second item, **"Choose Agent..."**, also shows up — it opens a
-**Windows Terminal** picker listing every agent detected on your
-machine (Claude Code, Codex, Copilot CLI, Gemini CLI, DeepSeek, Aider,
-etc.). Click one, use arrow keys + Enter, or press its number.
+one-click launch of whichever command-line AI agent you last ran,
+right there in the folder you right-clicked. If more than one agent is
+installed, a second item, **"Choose Agent..."**, also shows up — it
+opens a **Windows Terminal** picker listing every agent detected on
+your machine (Claude Code, Codex, Copilot CLI, Gemini CLI, DeepSeek,
+Aider, etc.), most-recently-used first. Click one, use arrow keys +
+Enter, or press its number.
 
 With only one agent installed, "Choose Agent..." is skipped entirely —
-there'd be nothing to choose from. Every pick updates the usage count
-behind "Open Agent", so it always points at whichever agent you
-actually reach for most.
+there'd be nothing to choose from. Every pick updates which agent
+"Open Agent" points to, so it always launches whatever you used last.
 
 Detection happens live — it's not a static menu built once. Install a
 new agent tomorrow and it just shows up in the picker, no
 reconfiguration needed.
+
+## Screenshots
+
+With only one agent detected, the menu stays out of your way — just
+"Open Agent", no picker to choose from:
+
+<img src="assets/explorer_XusGaD6OgP.png" width="480" alt="Context menu with only Claude Code installed, showing just Open Claude Code Agent">
+
+Install a second one and "Choose Agent..." shows up too, right next to
+"Open Agent" and Windows' own "Open in Terminal":
+
+<img src="assets/explorer_wNidgcFWdT.png" width="480" alt="Context menu with Claude Code and Codex installed, showing Choose Agent... and Open Claude Code Agent">
+
+Clicking "Choose Agent..." opens the picker in Windows Terminal —
+click, use arrow keys, or press a number. Note the **"Settings..."**
+entry at the bottom:
+
+<img src="assets/explorer_PYIteoRE5K.png" width="480" alt="In-terminal agent picker listing Claude Code and OpenAI Codex CLI">
+<img src="assets/explorer_EqoVU7uiWa.png" width="480" alt="In-terminal picker listing OpenAI Codex CLI, Claude Code, and a Settings... entry">
+
+Whichever one you pick becomes the new "Open Agent" target:
+
+<img src="assets/explorer_n5BlgS6x7Q.png" width="480" alt="Context menu after picking Codex, showing Open OpenAI Codex CLI Agent">
+
+"Settings..." lets you switch ordering or pin a fixed agent, right from
+the terminal:
+
+<img src="assets/explorer_msctD45r6I.png" width="480" alt="Open Agent settings menu showing Order by: Fixed and Fixed agent: Claude Code">
 
 ## Requirements
 
@@ -87,12 +115,13 @@ Agent..." items were registered in the Windows Explorer context menu.
 
 1. Right-click on a folder, **or** on empty space inside a folder
    that's open in Explorer.
-2. Click **"Open Agent"** to launch your most-used agent immediately,
-   or **"Choose Agent..."** to pick from the full list.
+2. Click **"Open Agent"** to launch whichever agent you last used
+   immediately, or **"Choose Agent..."** to pick from the full list.
 3. If you chose from the list, Windows Terminal opens in that folder
-   with a picker (only agents installed on your PATH show up,
-   most-used first) — click one, use arrow keys + Enter, or press its
-   number.
+   with a picker (only agents installed on your PATH show up, ordered
+   per your settings — see below) — click one, use arrow keys + Enter,
+   or press its number. A **"Settings..."** entry at the bottom of that
+   list lets you change the ordering or pin a fixed agent.
 4. The chosen agent starts right there, in that folder.
 
 > **Just installed a new agent?** The menu only re-checks what's
@@ -100,6 +129,37 @@ Agent..." items were registered in the Windows Explorer context menu.
 > if it launches your usual agent) to refresh things — if you now have
 > 2+ agents detected, "Choose Agent..." will show up from then on. No
 > need to reinstall or restart Explorer for this.
+
+## Settings: recent, most used, or a fixed agent
+
+By default, "Open Agent" and the top of the picker point at whichever
+agent you **used most recently**. Open the picker ("Choose Agent...")
+and click **"Settings..."** at the bottom of the list to change that.
+There are three modes, cycled by clicking "Order by":
+
+- **Most recently used** (default) — whatever you ran last.
+- **Most used** — whatever you run most often overall.
+- **Fixed** — always the same agent, no matter what you actually run.
+  Click **"Fixed agent"** to pick which one; doing so switches "Order
+  by" to Fixed automatically. Picking it again later without changing
+  modes just updates which agent is fixed.
+
+Switching away from Fixed doesn't forget which agent was pinned — flip
+back to it later and it's still set.
+
+Settings are stored at `%LOCALAPPDATA%\eman-openagent\settings.json`
+and can be hand-edited too:
+
+```json
+{
+  "orderMode": "recent",
+  "defaultAgent": null
+}
+```
+
+`orderMode` is `"recent"`, `"frequency"`, or `"fixed"`; `defaultAgent`
+is either `null` or an agent's exact `name` from `agents.json` (only
+used when `orderMode` is `"fixed"`).
 
 ## Supported agents / adding your own
 
@@ -172,10 +232,10 @@ If you installed with the quick install (no local clone to run
 irm https://raw.githubusercontent.com/Eman134/eman-openagent/main/uninstall-remote.ps1 | iex
 ```
 
-Either way, this removes the context menu entries. Your config file at
-`%LOCALAPPDATA%\eman-openagent\agents.json` (and usage stats) are kept;
-delete that folder manually if you want them gone too. The remote
-uninstaller additionally deletes the installed copy at
+Either way, this removes the context menu entries. Your files at
+`%LOCALAPPDATA%\eman-openagent` (`agents.json`, `settings.json`, usage
+stats) are kept; delete that folder manually if you want them gone
+too. The remote uninstaller additionally deletes the installed copy at
 `%LOCALAPPDATA%\Programs\eman-openagent`.
 
 ## How it works
@@ -186,16 +246,21 @@ uninstaller additionally deletes the installed copy at
   inside one). It launches `scripts\Run-Agent.ps1`.
 - `Select-Agent.ps1` and `Run-Agent.ps1` share `scripts\Common.ps1`,
   which reads `agents.json`, tests which agents are available on PATH
-  via `Get-Command`, and sorts the hits by usage count (tracked in
-  `%LOCALAPPDATA%\eman-openagent\usage.json`).
+  via `Get-Command`, and sorts the hits per `settings.json`'s
+  `orderMode` (`recent` or `frequency`), using per-agent `count`/
+  `lastUsed` numbers tracked in `%LOCALAPPDATA%\eman-openagent\usage.json`.
+  In `fixed` mode, `defaultAgent` (if still detected) always wins the
+  top spot instead, regardless of those numbers.
 - `Run-Agent.ps1` runs the top hit directly. `Select-Agent.ps1` (used
-  by "Choose Agent...") opens in Windows Terminal and renders a picker
-  straight in that console — a small P/Invoke layer around the Win32
-  console API (`ReadConsoleInput`) handles both mouse clicks and
-  keyboard input, so no extra window or GUI toolkit is involved.
-- After any pick, `Common.ps1`'s `Sync-ContextMenu` runs: it bumps the
-  usage count, refreshes "Open Agent"'s label to name the new top
-  agent, and adds or removes the `OpenAgent` ("Choose Agent...") key
+  by "Choose Agent...") opens in Windows Terminal and renders the
+  picker straight in that console via `Common.ps1`'s
+  `Read-ConsoleMenuChoice` — a small P/Invoke layer around the Win32
+  console API (`ReadConsoleInput`) that handles both mouse clicks and
+  keyboard input, so no extra window or GUI toolkit is involved. The
+  same function backs the in-picker "Settings..." sub-menus.
+- After any pick, `Common.ps1`'s `Sync-ContextMenu` runs: it records
+  that agent's usage, refreshes "Open Agent"'s label to name the new
+  top pick, and adds or removes the `OpenAgent` ("Choose Agent...") key
   depending on whether more than one agent is currently detected. Both
   items use `Position=Bottom`, which keeps them grouped together near
   Windows' own "Open in Terminal" entry.

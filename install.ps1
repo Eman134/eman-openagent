@@ -16,12 +16,13 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $quickScriptPath = Join-Path $repoRoot 'scripts\Run-Agent.ps1'
 $defaultConfigPath = Join-Path $repoRoot 'config\agents.json'
+$defaultSettingsPath = Join-Path $repoRoot 'config\settings.json'
 
 if (-not (Test-Path -LiteralPath $quickScriptPath)) {
     throw "Could not find $quickScriptPath. Run this install.ps1 from the repository root."
 }
 
-# Copy the default config to the user's folder on first install,
+# Copy the default config/settings to the user's folder on first install,
 # without overwriting any edits the user already made.
 $userConfigDir = Join-Path $env:LOCALAPPDATA 'eman-openagent'
 $userConfigPath = Join-Path $userConfigDir 'agents.json'
@@ -29,6 +30,12 @@ if (-not (Test-Path -LiteralPath $userConfigPath)) {
     New-Item -ItemType Directory -Path $userConfigDir -Force | Out-Null
     Copy-Item -LiteralPath $defaultConfigPath -Destination $userConfigPath
     Write-Host "Copied agents config to $userConfigPath (edit this file to add/remove agents)."
+}
+
+$userSettingsPath = Join-Path $userConfigDir 'settings.json'
+if (-not (Test-Path -LiteralPath $userSettingsPath)) {
+    New-Item -ItemType Directory -Path $userConfigDir -Force | Out-Null
+    Copy-Item -LiteralPath $defaultSettingsPath -Destination $userSettingsPath
 }
 
 . (Join-Path $repoRoot 'scripts\Common.ps1')

@@ -1,9 +1,10 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Quick-launch entry point: runs the most-used detected agent directly,
-    with no picker. Backs the "Open <Agent> Agent" context menu item,
-    whose label and visibility are kept in sync with usage via Sync-ContextMenu.
+    Quick-launch entry point: runs the top agent (per current settings -
+    most-recently-used, most-used, or a pinned default) directly, with no
+    picker. Backs the "Open <Agent> Agent" context menu item, whose label
+    and visibility are kept in sync via Sync-ContextMenu.
 
 .PARAMETER Path
     Folder to open the agent in. Passed by the Explorer context menu
@@ -35,9 +36,7 @@ if ($ordered.Count -eq 0) {
 
 $chosen = $ordered[0]
 
-$usage = Get-UsageMap
-$usage[$chosen.Agent.name] = $chosen.Count + 1
-Save-UsageMap -Usage $usage
+Register-AgentUse -AgentName $chosen.Agent.name
 Sync-ContextMenu
 
 Clear-Host
