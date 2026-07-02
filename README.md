@@ -21,56 +21,6 @@ Detection happens live — it's not a static menu built once. Install a
 new agent tomorrow and it just shows up in the picker, no
 reconfiguration needed.
 
-<p align="center">
-  <img src="assets/example.gif" width="720" alt="Demo: right-clicking a folder and launching an AI agent via Open Agent / Choose Agent...">
-</p>
-
-## Screenshots
-
-With only one agent detected, the menu stays out of your way — just
-"Open Agent", no picker to choose from:
-
-<img src="assets/explorer_XusGaD6OgP.png" width="480" alt="Context menu with only Claude Code installed, showing just Open Claude Code Agent">
-
-Install a second one and "Choose Agent..." shows up too, right next to
-"Open Agent" and Windows' own "Open in Terminal":
-
-<img src="assets/explorer_wNidgcFWdT.png" width="480" alt="Context menu with Claude Code and Codex installed, showing Choose Agent... and Open Claude Code Agent">
-
-Clicking "Choose Agent..." opens the picker in Windows Terminal —
-click, use arrow keys, or press a number. Note the **"Settings..."**
-entry at the bottom:
-
-<img src="assets/explorer_PYIteoRE5K.png" width="480" alt="In-terminal agent picker listing Claude Code and OpenAI Codex CLI">
-<img src="assets/explorer_EqoVU7uiWa.png" width="480" alt="In-terminal picker listing OpenAI Codex CLI, Claude Code, and a Settings... entry">
-
-Whichever one you pick becomes the new "Open Agent" target:
-
-<img src="assets/explorer_n5BlgS6x7Q.png" width="480" alt="Context menu after picking Codex, showing Open OpenAI Codex CLI Agent">
-
-"Settings..." lets you switch ordering or pin a fixed agent, right from
-the terminal:
-
-<img src="assets/explorer_msctD45r6I.png" width="480" alt="Open Agent settings menu showing Order by: Fixed and Fixed agent: Claude Code">
-
-## Requirements
-
-- Windows 10 (version 1903+) or Windows 11 — earlier versions can't
-  install Windows Terminal at all
-- Windows PowerShell 5.1 (built into Windows 10/11; PowerShell 7/pwsh
-  is not required, the scripts always run under `powershell.exe`)
-- [Windows Terminal](https://aka.ms/terminal) installed (`wt.exe` on PATH)
-- At least one command-line AI agent installed and on PATH
-  (e.g. `claude`, `codex`, `copilot`, `gemini`, `aider`, `cursor-agent`)
-
-No admin rights needed — the installer only touches
-`HKEY_CURRENT_USER`, so it only affects your own Windows user account.
-
-On **Windows 11**, the default right-click menu is trimmed down and
-puts classic entries like ours under **"Show more options"** (or
-Shift+F10) — that's a Windows 11 platform behavior affecting every
-classic context-menu tool, not something specific to this project.
-
 ## Installation
 
 ### Quick install
@@ -114,6 +64,55 @@ remote installer (irm .../install-remote.ps1 | iex, see the repo's
 README for the exact URL). Confirm the "Open Agent" and "Choose
 Agent..." items were registered in the Windows Explorer context menu.
 ```
+
+<p align="center">
+  <img src="assets/example.gif" width="720" alt="Demo: right-clicking a folder and launching an AI agent via Open Agent / Choose Agent...">
+</p>
+
+## Screenshots
+
+With only one agent detected, the menu stays out of your way — just
+"Open Agent", no picker to choose from:
+
+<img src="assets/explorer_XusGaD6OgP.png" width="480" alt="Context menu with only Claude Code installed, showing just Open Claude Code Agent">
+
+Install a second one and "Choose Agent..." shows up too, right next to
+"Open Agent" and Windows' own "Open in Terminal":
+
+<img src="assets/explorer_wNidgcFWdT.png" width="480" alt="Context menu with Claude Code and Codex installed, showing Choose Agent... and Open Claude Code Agent">
+
+Clicking "Choose Agent..." opens the picker in Windows Terminal —
+click, use arrow keys, or press a number. Note the **"Settings..."**
+entry at the bottom:
+
+<img src="assets/explorer_EqoVU7uiWa.png" width="480" alt="In-terminal picker listing OpenAI Codex CLI, Claude Code, and a Settings... entry">
+
+Whichever one you pick becomes the new "Open Agent" target:
+
+<img src="assets/explorer_n5BlgS6x7Q.png" width="480" alt="Context menu after picking Codex, showing Open OpenAI Codex CLI Agent">
+
+"Settings..." lets you switch ordering or pin a fixed agent, right from
+the terminal:
+
+<img src="assets/explorer_msctD45r6I.png" width="480" alt="Open Agent settings menu showing Order by: Fixed and Fixed agent: Claude Code">
+
+## Requirements
+
+- Windows 10 (version 1903+) or Windows 11 — earlier versions can't
+  install Windows Terminal at all
+- Windows PowerShell 5.1 (built into Windows 10/11; PowerShell 7/pwsh
+  is not required, the scripts always run under `powershell.exe`)
+- [Windows Terminal](https://aka.ms/terminal) installed (`wt.exe` on PATH)
+- At least one command-line AI agent installed and on PATH
+  (e.g. `claude`, `codex`, `copilot`, `gemini`, `aider`, `cursor-agent`)
+
+No admin rights needed — the installer only touches
+`HKEY_CURRENT_USER`, so it only affects your own Windows user account.
+
+On **Windows 11**, the default right-click menu is trimmed down and
+puts classic entries like ours under **"Show more options"** (or
+Shift+F10) — that's a Windows 11 platform behavior affecting every
+classic context-menu tool, not something specific to this project.
 
 ## Usage
 
