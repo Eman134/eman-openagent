@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Remove o item "Abrir agente" do menu de contexto do Explorer.
+    Removes the "Open Agent" item from the Explorer context menu.
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -17,5 +17,5 @@ foreach ($p in $paths) {
     }
 }
 
-Write-Host "Menu 'Abrir agente' removido." -ForegroundColor Yellow
-Write-Host "A config de agentes em %LOCALAPPDATA%\eman-openagent\agents.json foi mantida (remova manualmente se quiser)."
+Write-Host "'Open Agent' menu removed." -ForegroundColor Yellow
+Write-Host "The agents config at %LOCALAPPDATA%\eman-openagent\agents.json was kept (delete it manually if you want)."

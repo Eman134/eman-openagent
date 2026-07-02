@@ -1,28 +1,27 @@
 # eman-openagent
 
-Adiciona um item **"Abrir agente"** ao menu de contexto do Windows Explorer.
-Ao clicar com o botão direito em uma pasta (ou no espaço vazio dentro dela),
-o script detecta quais agentes de IA de linha de comando estão instalados
-(Claude Code, Codex, Copilot CLI, Gemini CLI, Aider, etc.), mostra uma lista
-para escolher e abre o agente selecionado no **Windows Terminal**, já na
-pasta clicada.
+Adds an **"Open Agent"** item to the Windows Explorer context menu.
+Right-click on a folder (or on empty space inside it), and the script
+detects which command-line AI agents are installed (Claude Code, Codex,
+Copilot CLI, Gemini CLI, Aider, etc.), shows a picker, and opens the
+chosen one in **Windows Terminal**, right in that folder.
 
-A detecção é feita em tempo real, a cada clique — não é um menu fixo
-gerado uma única vez. Se você instalar um novo agente amanhã, ele já
-aparece na lista sem precisar reconfigurar nada.
+Detection happens live, on every click — it's not a static menu built
+once. Install a new agent tomorrow and it just shows up in the list,
+no reconfiguration needed.
 
-## Requisitos
+## Requirements
 
 - Windows 10/11
-- PowerShell 5.1+ (já vem no Windows)
-- [Windows Terminal](https://aka.ms/terminal) instalado (`wt.exe` no PATH)
-- Pelo menos um agente de IA de linha de comando instalado e no PATH
-  (ex.: `claude`, `codex`, `copilot`, `gemini`, `aider`, `cursor-agent`)
+- PowerShell 5.1+ (already included with Windows)
+- [Windows Terminal](https://aka.ms/terminal) installed (`wt.exe` on PATH)
+- At least one command-line AI agent installed and on PATH
+  (e.g. `claude`, `codex`, `copilot`, `gemini`, `aider`, `cursor-agent`)
 
-Não é necessário rodar como administrador — a instalação usa apenas
-`HKEY_CURRENT_USER`, então afeta só o seu usuário do Windows.
+No admin rights needed — the installer only touches
+`HKEY_CURRENT_USER`, so it only affects your own Windows user account.
 
-## Instalação
+## Installation
 
 ```powershell
 git clone https://github.com/Eman134/eman-openagent.git
@@ -30,105 +29,105 @@ cd eman-openagent
 .\install.ps1
 ```
 
-Se o PowerShell bloquear a execução de scripts, rode uma vez:
+If PowerShell blocks script execution, run this once:
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
-Após instalar, se o item "Abrir agente" não aparecer de imediato no menu
-de contexto, reinicie o Explorer (`taskkill /f /im explorer.exe && start explorer.exe`)
-ou faça logoff/login.
+After installing, if "Open Agent" doesn't show up right away in the
+context menu, restart Explorer
+(`taskkill /f /im explorer.exe && start explorer.exe`) or log off/on.
 
-## Uso
+## Usage
 
-1. Clique com o botão direito em uma pasta, **ou** no espaço vazio dentro
-   de uma pasta aberta no Explorer.
-2. Clique em **"Abrir agente"**.
-3. Escolha o agente na lista que aparecer (só aparecem os que estão
-   instalados no seu PATH).
-4. O Windows Terminal abre já na pasta escolhida, rodando o agente.
+1. Right-click on a folder, **or** on empty space inside a folder
+   that's open in Explorer.
+2. Click **"Open Agent"**.
+3. Pick an agent from the list (only agents installed on your PATH
+   show up).
+4. Windows Terminal opens right in that folder, running the agent.
 
-## Agentes suportados / como adicionar outros
+## Supported agents / adding your own
 
-A lista de agentes fica em:
+The agent list lives at:
 
 ```
 %LOCALAPPDATA%\eman-openagent\agents.json
 ```
 
-Esse arquivo é copiado automaticamente do repositório na primeira
-instalação, e fica sob seu controle — editá-lo não afeta o repositório
-nem é sobrescrito em uma reinstalação.
+That file is automatically copied from the repo on first install, and
+is yours to edit — changes won't affect the repository and won't be
+overwritten on reinstall.
 
-Cada entrada tem este formato:
-
-```json
-{
-  "name": "Nome que aparece no menu",
-  "checkCommand": "comando-usado-para-detectar-se-esta-instalado",
-  "runCommand": "comando-que-sera-executado-no-terminal"
-}
-```
-
-Padrão incluído:
-
-| Nome                | Comando detectado |
-|----------------------|-------------------|
-| Claude Code          | `claude`          |
-| OpenAI Codex CLI     | `codex`           |
-| GitHub Copilot CLI   | `copilot`         |
-| Gemini CLI           | `gemini`          |
-| Aider                | `aider`           |
-| Cursor Agent CLI     | `cursor-agent`    |
-
-Para adicionar outro agente, inclua um novo objeto na lista, por exemplo:
+Each entry looks like this:
 
 ```json
 {
-  "name": "Meu Agente Custom",
-  "checkCommand": "meu-agente",
-  "runCommand": "meu-agente --algum-flag"
+  "name": "Name shown in the menu",
+  "checkCommand": "command used to detect if it's installed",
+  "runCommand": "command that will run in the terminal"
 }
 ```
 
-Salve o arquivo e pronto — na próxima vez que abrir "Abrir agente", ele
-já é detectado (se `checkCommand` estiver no PATH).
+Bundled by default:
 
-## Desinstalação
+| Name                 | Detected command  |
+|-----------------------|-------------------|
+| Claude Code            | `claude`          |
+| OpenAI Codex CLI       | `codex`           |
+| GitHub Copilot CLI     | `copilot`         |
+| Gemini CLI             | `gemini`          |
+| Aider                  | `aider`           |
+| Cursor Agent CLI       | `cursor-agent`    |
+
+To add another agent, just append a new object to the list, e.g.:
+
+```json
+{
+  "name": "My Custom Agent",
+  "checkCommand": "my-agent",
+  "runCommand": "my-agent --some-flag"
+}
+```
+
+Save the file, and it's live — next time you click "Open Agent", it
+gets picked up automatically (as long as `checkCommand` is on PATH).
+
+## Uninstall
 
 ```powershell
 cd eman-openagent
 .\uninstall.ps1
 ```
 
-Isso remove as entradas do menu de contexto. O arquivo de configuração em
-`%LOCALAPPDATA%\eman-openagent\agents.json` é mantido (apague manualmente
-se quiser removê-lo também).
+This removes the context menu entries. Your config file at
+`%LOCALAPPDATA%\eman-openagent\agents.json` is kept (delete it manually
+if you want it gone too).
 
-## Como funciona por baixo dos panos
+## How it works
 
-- `install.ps1` cria duas chaves em `HKCU:\Software\Classes`:
-  - `Directory\shell\OpenAgent` — clique direito em cima de uma pasta.
-  - `Directory\Background\shell\OpenAgent` — clique direito no espaço
-    vazio dentro de uma pasta.
-- Cada chave chama `scripts\Invoke-OpenAgent.ps1` passando o caminho da
-  pasta clicada (`%1` ou `%V`, conforme o caso).
-- O script lê `agents.json`, testa com `Get-Command` quais estão
-  disponíveis no PATH, mostra um formulário simples (Windows Forms) para
-  escolha e chama `wt.exe -d "<pasta>" powershell -NoExit -Command "<comando>"`.
+- `install.ps1` creates two keys under `HKCU:\Software\Classes`:
+  - `Directory\shell\OpenAgent` — right-click on top of a folder.
+  - `Directory\Background\shell\OpenAgent` — right-click on empty space
+    inside a folder.
+- Each key calls `scripts\Invoke-OpenAgent.ps1`, passing the clicked
+  folder's path (`%1` or `%V`, depending on the case).
+- The script reads `agents.json`, tests which ones are available on
+  PATH via `Get-Command`, shows a small Windows Forms picker, and runs
+  `wt.exe -d "<folder>" powershell -NoExit -Command "<command>"`.
 
 ## Troubleshooting
 
-- **O item não aparece no menu**: reinicie o Explorer ou faça
-  logoff/login. Alguns caches de menu de contexto do Windows demoram
-  para atualizar.
-- **"Nenhum agente encontrado"**: confirme que o agente está instalado e
-  disponível em uma nova janela de terminal rodando `where <comando>`.
-- **Erro de política de execução**: rode
-  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` uma vez no
+- **The item doesn't show up in the menu**: restart Explorer or
+  log off/on. Windows caches context menu entries and can take a
+  moment to refresh.
+- **"No agent found"**: make sure the agent is installed and reachable
+  by opening a new terminal window and running `where <command>`.
+- **Execution policy error**: run
+  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once in
   PowerShell.
 
-## Licença
+## License
 
-MIT — veja [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).
