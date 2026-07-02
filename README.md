@@ -5,10 +5,14 @@
 # eman-openagent
 
 Adds an **"Open Agent"** item to the Windows Explorer context menu.
-Right-click on a folder (or on empty space inside it), and the script
-detects which command-line AI agents are installed (Claude Code, Codex,
-Copilot CLI, Gemini CLI, Aider, etc.), shows a picker, and opens the
-chosen one in **Windows Terminal**, right in that folder.
+Right-click on a folder (or on empty space inside it), and a **Windows
+Terminal** window opens right there with a picker for every
+command-line AI agent installed on your machine (Claude Code, Codex,
+Copilot CLI, Gemini CLI, DeepSeek, Aider, etc.) — click one, use the
+arrow keys + Enter, or just press its number.
+
+The picker lists your **most-used agent first**, based on how often
+you've picked each one before.
 
 Detection happens live, on every click — it's not a static menu built
 once. Install a new agent tomorrow and it just shows up in the list,
@@ -61,9 +65,10 @@ context menu, restart Explorer
 1. Right-click on a folder, **or** on empty space inside a folder
    that's open in Explorer.
 2. Click **"Open Agent"**.
-3. Pick an agent from the list (only agents installed on your PATH
-   show up).
-4. Windows Terminal opens right in that folder, running the agent.
+3. Windows Terminal opens in that folder with a picker (only agents
+   installed on your PATH show up, most-used first). Pick one by
+   clicking it, using arrow keys + Enter, or pressing its number.
+4. The chosen agent starts right there, in that folder.
 
 ## Supported agents / adding your own
 
@@ -137,11 +142,16 @@ if you want it gone too).
   - `Directory\shell\OpenAgent` — right-click on top of a folder.
   - `Directory\Background\shell\OpenAgent` — right-click on empty space
     inside a folder.
-- Each key calls `scripts\Invoke-OpenAgent.ps1`, passing the clicked
-  folder's path (`%1` or `%V`, depending on the case).
-- The script reads `agents.json`, tests which ones are available on
-  PATH via `Get-Command`, shows a small Windows Forms picker, and runs
-  `wt.exe -d "<folder>" powershell -NoExit -Command "<command>"`.
+- Each key launches `wt.exe -d "<folder>" powershell -NoExit -File
+  scripts\Select-Agent.ps1 -Path "<folder>"`.
+- `Select-Agent.ps1` reads `agents.json`, tests which ones are
+  available on PATH via `Get-Command`, and sorts the hits by usage
+  count (tracked in `%LOCALAPPDATA%\eman-openagent\usage.json`).
+- It then renders the picker directly in that console — a small
+  P/Invoke layer around the Win32 console API (`ReadConsoleInput`)
+  handles both mouse clicks and keyboard input, so no extra window or
+  GUI toolkit is involved. Once you pick an agent, its usage count is
+  bumped and its `runCommand` runs right there.
 
 ## Troubleshooting
 

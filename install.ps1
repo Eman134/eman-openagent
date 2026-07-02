@@ -14,7 +14,7 @@
 $ErrorActionPreference = 'Stop'
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$scriptPath = Join-Path $repoRoot 'scripts\Invoke-OpenAgent.ps1'
+$scriptPath = Join-Path $repoRoot 'scripts\Select-Agent.ps1'
 $defaultConfigPath = Join-Path $repoRoot 'config\agents.json'
 
 if (-not (Test-Path -LiteralPath $scriptPath)) {
@@ -46,7 +46,7 @@ function Register-OpenAgentMenu {
 
     $cmdKey = Join-Path $KeyPath 'command'
     New-Item -Path $cmdKey -Force | Out-Null
-    $command = 'powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "{0}" -Path "{1}"' -f $scriptPath, $PathToken
+    $command = 'wt.exe -d "{0}" powershell -NoExit -ExecutionPolicy Bypass -File "{1}" -Path "{0}"' -f $PathToken, $scriptPath
     Set-ItemProperty -Path $cmdKey -Name '(Default)' -Value $command
 }
 
